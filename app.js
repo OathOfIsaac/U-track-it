@@ -1,22 +1,66 @@
-const mysql = require('mysql2');
 const inquirer = require('inquirer');
-// const db = require('./config/connection.js');
-const {viewDepartments} = require('./queries.js');
+const db = require('./config/connection.js');
+const {viewDepartments, viewRoles} = require('./queries.js');
 
-// const promptUser = () => 
+const promptUser = () => {
+    inquirer.prompt([
+    {
+        type: 'list',
+        name: 'menuChoice',
+        message: 'Please select an action',
+        choices: ['View all departments , View all roles, View all employees','Add a department', 'Add a role', 'Add an employee', 'Update employee role']
+    },
+])
+    .then( promptChoice => {
 
-//         name: 'menuChoice',
-//         message: 'Please select an action',
-//         choices: ['View all departments , View all roles, View all employees']
+        let menuChoice = promptChoice.menuChoice
+        //take prompt , run functions associated with them
+        //departments
+        if (menuChoice === 'View all departments') {
+        viewDepartments().then(data=>{console.log(data)})
+        let departments = await viewDepartments()
+        console.log(departments);
+       }
+       //roles
+       else if (menuChoice === 'View all roles') {
+           viewRoles().then(
+               data=>{console.log(data)
+            })
+       }
+       //employees
+       else if (menuChoice === 'View all employees') {
+            //viewEmployees();
+        }
+        //add department
+        else if (menuChoice === 'Add a department') {
+            //addDepartment();
+        }
+        //add roll
+       else if (menuChoice === 'Add a role') {
+            //addRole();
+        }
+        //add employee
+       else if (menuChoice === 'Add an employee') {
+            //addEmployee();
+        }
+        //update employee role 
+        else if (menuChoice === 'Update an employee role') {
+            updateRole();
+        }
+        else {
+            console.log('Error: Something broke, oops');
+            return;
+        }
 
 
+    })
+}
+
+promptUser();
 
 
-
-function main() {
     //inquirer prompt to ask user what to do
 
-}
 
 
 

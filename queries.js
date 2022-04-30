@@ -10,13 +10,13 @@ const db = require('./config/connection.js');
 function viewDeparments = function(){
     //db query get all dept data
     //open employeeDB
-    db.query(
-            "SELECT * FROM deparement" , 
-            function(err, results){
-                if (err) throw err
-                console.table(results)
-                
+    return new Promise(function (resolve, reject){
+        db.query(
+            "SELECT * FROM `deparement`;" 
+            , (error, res) => {
+                resolve(res);            
             })
+    })
 }
 
 module.exports={viewDeparments}
