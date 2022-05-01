@@ -11,8 +11,8 @@ const db = mysql.createConnection(
       password: 'Yoloswag69',
       database: 'employeeDB'
     },
-    console.log('Connected to the employee database.')
+    console.log('Connected to employee database.')
   );
 
-db.connect()
+db.connect()//Maybe comment this out
 module.exports= db 

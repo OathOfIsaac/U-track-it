@@ -39,7 +39,7 @@ const promptUser = () => {
             let roles = await viewEmployees()
             console.log(employees);
             }
-        //add department
+        //add department()
         else if (menuChoice === 'Add a department') {
             addDepartment().then(
                 data=>{console.log(data)
@@ -77,49 +77,8 @@ const promptUser = () => {
     })
 }
 
-const addDepartment = () => {
-    return inquirer
-        .prompt([
-            {
-                type: 'input',
-                name: 'name',
-                message: 'Would you kindly provide the department`s name:',
-            },
-        ])
-        .then((depResponse) => {
-            departmentRes = depResponse.name;
-            let departSql = `INSERT INTO department (depart_name)
-                            VALUES (?)`;
-            db.query(departSql, departmentRes, (err, res) => {
-                if (err) throw err;
-                console.log('New department added.');
-                startUp();
-            });
-        });
-};
-
-const addRole = () => {
-    return inquirer
-        .prompt([
-            {
-                type: 'input',
-                name: 'name',
-                message: 'Would you kindly provide the role`s name:',
-            },
-        ])
-        .then((depResponse) => {
-            roleRes = roleResponse.name;
-            let departSql = `INSERT INTO role (role_name)
-                            VALUES (?)`;
-            db.query(departSql, departmentRes, (err, res) => {
-                if (err) throw err;
-                console.log('New department added.');
-                startUp();
-            });
-        });
-};
-
 promptUser();
+module.exports={ promptUser}
 
 
     //inquirer prompt to ask user what to do
