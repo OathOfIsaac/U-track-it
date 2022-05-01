@@ -19,4 +19,16 @@ function viewDeparments = function(){
     })
 }
 
-module.exports={viewDeparments}
+const viewRoles = function(){
+    //open employeeDB
+    //promise wrapper
+    return new Promise(function (resolve, reject){
+        db.query(
+            'SELECT * FROM `role`;'
+            , (error, res) => {
+                resolve(res);
+            })
+    })
+}
+
+module.exports={viewDeparments, viewRoles}

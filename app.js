@@ -1,6 +1,6 @@
 const inquirer = require('inquirer');
 const db = require('./config/connection.js');
-const {viewDepartments, viewRoles} = require('./queries.js');
+const {viewDepartments, viewRoles, viewEmployees, addDepartment} = require('./queries.js');
 
 const promptUser = () => {
     inquirer.prompt([
@@ -17,7 +17,9 @@ const promptUser = () => {
         //take prompt , run functions associated with them
         //departments
         if (menuChoice === 'View all departments') {
-        viewDepartments().then(data=>{console.log(data)})
+        viewDepartments().then(
+            data=>{console.log(data)
+        })
         let departments = await viewDepartments()
         console.log(departments);
        }
@@ -26,35 +28,96 @@ const promptUser = () => {
            viewRoles().then(
                data=>{console.log(data)
             })
+            let roles = await viewRoles()
+            console.log(roles);
        }
        //employees
        else if (menuChoice === 'View all employees') {
-            //viewEmployees();
-        }
+            viewEmployees().then(
+                data=>{console.log(data)
+             })
+            let roles = await viewEmployees()
+            console.log(employees);
+            }
         //add department
         else if (menuChoice === 'Add a department') {
-            //addDepartment();
+            addDepartment().then(
+                data=>{console.log(data)
+             })
+            let //addDept function
         }
         //add roll
        else if (menuChoice === 'Add a role') {
-            //addRole();
+            addRole().then(
+                data=>{console.log(data)
+            })
+            let addRoll = await addRole()
+            console.log(addRoll);
         }
         //add employee
        else if (menuChoice === 'Add an employee') {
-            //addEmployee();
+            addEmployee().then(
+                data=>{console.log(data)
+            })
+            let addEmp = await addEmployee()
+            console.log(addEmp);
         }
         //update employee role 
         else if (menuChoice === 'Update an employee role') {
-            updateRole();
+            updateRole().then(
+                data=>{console.log(data)
+                })
+            let upRole = await updateRole()
+            console.log(upRole);
         }
         else {
             console.log('Error: Something broke, oops');
             return;
         }
-
-
     })
 }
+
+const addDepartment = () => {
+    return inquirer
+        .prompt([
+            {
+                type: 'input',
+                name: 'name',
+                message: 'Would you kindly provide the department`s name:',
+            },
+        ])
+        .then((depResponse) => {
+            departmentRes = depResponse.name;
+            let departSql = `INSERT INTO department (depart_name)
+                            VALUES (?)`;
+            db.query(departSql, departmentRes, (err, res) => {
+                if (err) throw err;
+                console.log('New department added.');
+                startUp();
+            });
+        });
+};
+
+const addRole = () => {
+    return inquirer
+        .prompt([
+            {
+                type: 'input',
+                name: 'name',
+                message: 'Would you kindly provide the role`s name:',
+            },
+        ])
+        .then((depResponse) => {
+            roleRes = roleResponse.name;
+            let departSql = `INSERT INTO role (role_name)
+                            VALUES (?)`;
+            db.query(departSql, departmentRes, (err, res) => {
+                if (err) throw err;
+                console.log('New department added.');
+                startUp();
+            });
+        });
+};
 
 promptUser();
 
