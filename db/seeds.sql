@@ -1,5 +1,3 @@
-USE employeeDB;
-
 INSERT INTO department
 (name)
 VALUES
@@ -10,15 +8,15 @@ VALUES
 INSERT INTO role
 (title, salary, department_id)
 VALUES
-('marketer', 10000 , 1),
-('manager' , 21000 , 1),
+('salesperson', 10000 , 1),
+('sales lead' , 21000 , 1),
 ('junior programmer' , 20000 , 2),
 ('senior programmer' 30000, 2),
-('manager', 21000, 2),
+('lead engineer', 21000, 2),
 ('hr', 15000 , 3),
-('manager', 19000, 3);
+('hr lead', 19000, 3);
 
-INSERT INTO employee
+INSERT INTO employees
 (first_name , last_name , role_id , manager_id)
 VALUES
 ('Isaac', 'Gonzalez', 5, 1),
