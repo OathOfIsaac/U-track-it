@@ -102,6 +102,35 @@ const viewEmployees = () => {
   })
 };
 
+//Add Department
+const addDepartment = () => {
+  inquirer.prompt([
+    {
+      type: 'input',
+      name: 'department',
+      message: 'Would you kindly input a NEW department name:',
+      validate: (department) => {
+        if (department) {
+          return true;
+        } else {
+          console.log('Error: invalid input. Try Again!');
+          return false;
+        }
+      },
+    },
+  ])
+  .then((res) => {
+    let sqlAddDept = `INSERT INTO department (name) VALUES (?)`;
+    db.query(sqlAddDept, res.department, (err, results) => {
+      if (err) throw err;
+      console.log(`${res.department} has been successfully created!`);
+      viewDepartments();
+    });
+  });
+};
+
+
+
 //
 //     .then( promptChoice => {
 
