@@ -129,7 +129,67 @@ const addDepartment = () => {
   });
 };
 
-
+//Add Role
+const addRole = () => {
+  inquirer.prompt([
+    {
+      type: 'input',
+      name: 'title',
+      message: 'Would you kindly enter a NEW job title:',
+      validate: (title) => {
+        if (title) {
+          return true;
+        } else {
+          console.log('Please enter a job title name!');
+          return false;
+        }
+      },
+    },
+    {
+      type: 'input',
+      name: 'salary',
+      message: 'What salary will this position earn?',
+      validate: (salary) => {
+        if (salary) {
+          return true;
+        } else {
+          console.log('Please enter a salary amount!');
+          return false;
+        }
+      },
+    },
+  ])
+  .then((res) => {
+    roleRes = [res.title, res.salary];
+    let departmentSql = `SELECT * FROM department`;
+    db.query(departmentSql, (err,res) => {
+      if (err) throw err;
+      let department = res.map(({ id, name }) => ({
+        name: name,
+        value: id,
+      }));
+      inquirer.prompt([
+        {
+          type: 'list',
+          name: 'department',
+          message: 'WOuld you kindly selevt a department for this role:',
+          choices: department,
+        },
+      ])
+      .then((res) => {
+        deptRes = res.department;
+        roleRes.push(deptRes);
+        let roleSql = `INSERT INTO role (title, salary, department_id)
+                      VALUE (? , ?, ?)`;
+        db.query(roleSql, roleRes, (err, results) => {
+          if (err) throw err;
+          console.log('Succesfully created new Role.');
+          promptUser();
+        });
+      });
+    });
+  });
+};
 
 //
 //     .then( promptChoice => {
