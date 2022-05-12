@@ -1,275 +1,218 @@
-const inquirer = require('inquirer');
-const db = require('./config/connection.js');
-const cTable = require('console.table');
-const {response} = require('express');
+const inquirer = require("inquirer")
+const db = require("./config/connection")
+const cTable = require("console.table")
 
-// Start server after DB connection
-db.connect(err => {
-    if (err) throw err;
-    console.log('Database connected.');
-    promptUser();
-});
 
-//prompt user with menus after the app connects
-const promptUser = () => {
-    inquirer.prompt([
+// List of actions to view Database
+const viewAll = async () => {
+  inquirer.prompt([
     {
-        type: 'list',
-        name: 'menuChoice',
-        message: 'Please select an action',
-        choices: [
-            'View all departments' , 
-            'View all roles', 
-            'View all employees',
-            'Add a department', 
-            'Add a role', 
-            'Add an employee', 
-            'Update employee role'
-        ]
+      type: "list",
+      name: "choice",
+      message: "Which would you like to do?",
+      choices: ["View All Departments", "View All Roles", "View All Employees", "Add a Department", "Add a Role", "Add an Employee", "Update an Employee", "Done!"]
     }
-])
-    // begin switch/case
-    .then(function (res) {
-        switch (res.menu) {
-          case 'View All Departments':
-            viewDepartments();
-            break;
-          case 'View All Roles':
-            viewRoles();
-            break;
-          case 'View All Employees':
-            viewEmployees();
-            break;
-          case 'Add a Department':
-            addDepartment();
-            break;
-          case 'Add a Role':
-            addRole();
-            break;
-          case 'Add an Employee':
-            addEmployee();
-            break;
-          case 'Update an Employee Role':
-            updateEmployeeRole();
-            break;
-        }
+  ])
+    .then((answer) => {
+      switch (answer.choice) {
+        case "View All Departments":
+          viewDept();
+          break;
+        case "View All Roles":
+          viewRoles();
+          break;
+        case "View All Employees":
+          viewEmployees();
+          break;
+        case "Add a Department":
+          addDept();
+          break;
+        case "Add a Role":
+          addRole();
+          break;
+        case "Add an Employee":
+          addEmployee();
+          break;
+        case "Update an Employee":
+          updateEmployee();
+          break;
+        case "Done!":
+          db.end();
+          break;
+      }
     })
-};
+}
 
-//View all departments
-const viewDepartments = () => {
-  const sqlDep = `SELECT * FROM department`;
-  db.query( sqlDep, (err, rows) => {
-    if (err) throw (err);
-    console.table(rows);
-    promptUser();
-  })
-};
 
-// View all roles
-const viewRoles = () => {
-const sqlRole = `SELECT role.*, department.name
-                AS department_id
-                FROM role
-                LEFT JOIN department
-                ON role.department_id = department.id`;
-  db.query(sqlRole, (err,rows) => {
+// functions for selections
+const viewDept = async () => {
+  const query = "SELECT * FROM department";
+
+  db.query(query, function (err, res) {
     if (err) throw err;
-    console.table(rows);
-    promptUser();
+    const deptArray = []
+    res.forEach(department => deptArray.push(department))
+    console.table(deptArray)
+    viewAll()
   })
-};
+}
 
-// View all employees
-const viewEmployees = () => {
-  const sqlEmp = `SELECT
-                  E.id,
-                  E.first_name,
-                  E.last_name,
-                  role.title,
-                  department.name AS department,
-                  role salary,
-                  CONCAT(M.first_name,' ',M.last_name) AS manager
-                  FROM employees E
-                  JOIN role ON E.role_id - role.id
-                  JOIN department ON role.department_id - department.id
-                  LEFT JOIN employees M ON E.manager_id - M.id;
-                  `;
-  db.query(sql, (err,rows) => {
+const viewRoles = async () => {
+  const query = "SELECT * FROM role";
+
+  db.query(query, function (err, res) {
     if (err) throw err;
-    console.table(rows);
-    promptUser();
+    const roleArray = []
+    res.forEach(role => roleArray.push(role))
+    console.table(roleArray)
+    viewAll()
   })
-};
+}
 
-//Add Department
-const addDepartment = () => {
+const viewEmployees = async () => {
+  const query = 'SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(manager.first_name, "", manager.last_name) AS manager FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id LEFT JOIN employee manager on manager.id = employee.manager_id;';
+
+  db.query(query, function (err, res) {
+    if (err) throw err;
+    const employeeArray = []
+    res.forEach(employee => employeeArray.push(employee))
+    console.table(employeeArray)
+    viewAll()
+  })
+}
+
+// functions for adding to databases
+const addDept = async () => {
   inquirer.prompt([
     {
-      type: 'input',
-      name: 'department',
-      message: 'Would you kindly input a NEW department name:',
-      validate: (department) => {
-        if (department) {
-          return true;
-        } else {
-          console.log('Error: invalid input. Try Again!');
-          return false;
-        }
-      },
-    },
+      type: "input",
+      name: "dept",
+      message: "What is the name of the department?"
+    }
   ])
-  .then((res) => {
-    let sqlAddDept = `INSERT INTO department (name) VALUES (?)`;
-    db.query(sqlAddDept, res.department, (err, results) => {
-      if (err) throw err;
-      console.log(`${res.department} has been successfully created!`);
-      viewDepartments();
-    });
-  });
-};
+    .then(function (answer) {
+      console.log(answer)
+      db.query("INSERT INTO department SET ?", {
+        name: answer.dept
+      }, function (err) {
+        if (err) throw err;
+      })
+      viewAll();
+    })
+}
 
-//Add Role
-const addRole = () => {
+const addRole = async () => {
   inquirer.prompt([
     {
-      type: 'input',
-      name: 'title',
-      message: 'Would you kindly enter a NEW job title:',
-      validate: (title) => {
-        if (title) {
-          return true;
-        } else {
-          console.log('Please enter a job title name!');
-          return false;
-        }
-      },
+      type: "input",
+      name: "newRole",
+      message: "What is the name of the new role?"
     },
     {
-      type: 'input',
-      name: 'salary',
-      message: 'What salary will this position earn?',
-      validate: (salary) => {
-        if (salary) {
-          return true;
-        } else {
-          console.log('Please enter a salary amount!');
-          return false;
-        }
-      },
+      type: "input",
+      name: "salary",
+      message: "Whats is the salary for the role?"
     },
+    {
+      type: "input",
+      name: "roleDept",
+      message: "Which department does the role belong too?"
+    }
   ])
-  .then((res) => {
-    roleRes = [res.title, res.salary];
-    let departmentSql = `SELECT * FROM department`;
-    db.query(departmentSql, (err,res) => {
-      if (err) throw err;
-      let department = res.map(({ id, name }) => ({
-        name: name,
-        value: id,
-      }));
+    .then(function (answers) {
+      console.log(answers)
+      db.query("INSERT INTO role SET ?", {
+        title: answers.newRole,
+        salary: answers.salary,
+        department_id: answers.roleDept
+      })
+      viewAll();
+    })
+}
+
+const addEmployee = async () => {
+  inquirer.prompt([
+    {
+      type: "input",
+      name: "firstName",
+      message: "What is the employees first name?"
+    },
+    {
+      type: "input",
+      name: "lastName",
+      message: "What is the employees last name?"
+    },
+    {
+      type: "input",
+      name: "emRole",
+      message: "what is the employees role?"
+    },
+    {
+      type: "input",
+      name: "emMang",
+      message: "Who is the employees manager?"
+    }
+  ])
+    .then(function (answers) {
+      console.log(answers)
+      db.query("INSERT INTO employee SET ?", {
+        first_name: answers.firstName,
+        last_name: answers.lastName,
+        role_id: answers.emRole,
+        manager_id: answers.emMang
+      })
+      viewAll();
+    })
+}
+
+//function to update employee and role
+
+const updateEmployee = async () => {
+  db.query("SELECT * FROM employee", (err, rows) => {
+    if (err) {
+      console.log(err)
+    }
+    else {
+      const choices = rows.map(emName => ({ name: emName.first_name, value: emName.id }))
+
       inquirer.prompt([
         {
-          type: 'list',
-          name: 'department',
-          message: 'WOuld you kindly selevt a department for this role:',
-          choices: department,
-        },
+          type: "list",
+          name: "employeeList",
+          message: "Which employees role do you wish to update?",
+          choices
+        }
       ])
-      .then((res) => {
-        deptRes = res.department;
-        roleRes.push(deptRes);
-        let roleSql = `INSERT INTO role (title, salary, department_id)
-                      VALUE (? , ?, ?)`;
-        db.query(roleSql, roleRes, (err, results) => {
-          if (err) throw err;
-          console.log('Succesfully created new Role.');
-          promptUser();
-        });
-      });
-    });
-  });
-};
+        .then(function (choice) {
+          updateRole()
+        })
+    }
+  })
 
-//
-//     .then( promptChoice => {
+}
 
-//         let menuChoice = promptChoice.menuChoice
-//         //take prompt , run functions associated with them
-//         //departments
-//         if (menuChoice === 'View all departments') {
-//         viewDepartments().then(
-//             data=>{console.log(data)
-//         })
-//         let departments = await viewDepartments()
-//         console.log(departments);
-//        }
-//        //roles
-//        else if (menuChoice === 'View all roles') {
-//            viewRoles().then(
-//                data=>{console.log(data)
-//             })
-//             let roles = await viewRoles()
-//             console.log(roles);
-//        }
-//        //employees
-//        else if (menuChoice === 'View all employees') {
-//             viewEmployees().then(
-//                 data=>{console.log(data)
-//              })
-//             let roles = await viewEmployees()
-//             console.log(employees);
-//             }
-//         //add department()
-//         else if (menuChoice === 'Add a department') {
-//             addDepartment().then(
-//                 data=>{console.log(data)
-//              })
-//             let //addDept function
-//         }
-//         //add roll
-//        else if (menuChoice === 'Add a role') {
-//             addRole().then(
-//                 data=>{console.log(data)
-//             })
-//             let addRoll = await addRole()
-//             console.log(addRoll);
-//         }
-//         //add employee
-//        else if (menuChoice === 'Add an employee') {
-//             addEmployee().then(
-//                 data=>{console.log(data)
-//             })
-//             let addEmp = await addEmployee()
-//             console.log(addEmp);
-//         }
-//         //update employee role 
-//         else if (menuChoice === 'Update an employee role') {
-//             updateRole().then(
-//                 data=>{console.log(data)
-//                 })
-//             let upRole = await updateRole()
-//             console.log(upRole);
-//         }
-//         else {
-//             console.log('Error: Something broke, oops');
-//             return;
-//         }
-//     })
-// }
-
-promptUser();
-module.exports={ promptUser}
-
-
-    //inquirer prompt to ask user what to do
-
-
-
-
-// Make inquirer prompt that has all these options. view all departments, view all roles, view all employees, add a department, add a role, add an employee, and update an employee role
-// if statement to run specific function for the task you picked 
-//inside function db query console.table()
-
+const updateRole = async () => {
+  db.query("SELECT * FROM role", (err, rows) => {
+    if (err) {
+      console.log(err)
+    } else {
+      const choices = rows.map(roleTitle => ({ title: roleTitle.title, value: roleTitle.title }))
+      inquirer.prompt([
+        {
+          type: "list",
+          name: "roleList",
+          message: "Please select the employees new role.",
+          choices
+        }
+      ])
+        .then(function (choice) {
+          console.log("The employees role has been updated!")
+          role_id = choice.roleTitle
+          viewAll()
+        })
+    }
+  })
+}
+viewAll()
 
 
